@@ -1,22 +1,22 @@
-pub mod structures;
 mod camera;
 mod maths;
+pub mod structures;
 
 use glium::{Display, Program, Surface};
 use std::fs;
 use structures::Scene;
 
 pub struct Engine {
-  camera: camera::Camera,
-  scene: Option<Scene>
+    camera: camera::Camera,
+    scene: Option<Scene>,
 }
 
 impl Engine {
     pub fn new() -> Engine {
-      Engine {
-        camera: camera::Camera::new(),
-        scene: None
-      }
+        Engine {
+            camera: camera::Camera::new(),
+            scene: None,
+        }
     }
 
     pub fn set_scene(&mut self, scene: Scene) {
@@ -31,7 +31,7 @@ impl Engine {
             [0.1, 0.0, 0.0, 0.0],
             [0.0, 0.1, 0.0, 0.0],
             [0.0, 0.0, 0.1, 0.0],
-            [0.0, 0.0, 1.0, 1.0f32]
+            [0.0, 0.0, 1.0, 1.0f32],
         ];
 
         let light = [-1.0, 0.4, 0.9f32];
@@ -48,22 +48,23 @@ impl Engine {
             depth: glium::Depth {
                 test: glium::draw_parameters::DepthTest::IfLess,
                 write: true,
-                .. Default::default()
+                ..Default::default()
             },
             backface_culling: glium::draw_parameters::BackfaceCullingMode::CullCounterClockwise,
-            .. Default::default()
+            ..Default::default()
         };
 
         let vertex_shader_src = fs::read_to_string("src/shaders/vertex_shader.glsl").unwrap();
         let fragment_shader_src = fs::read_to_string("src/shaders/fragment_shader.glsl").unwrap();
 
-        let program = Program::from_source(display, &vertex_shader_src, &fragment_shader_src, None).unwrap();
+        let program =
+            Program::from_source(display, &vertex_shader_src, &fragment_shader_src, None).unwrap();
 
         if self.scene.is_some() {
             for mesh in &self.scene.as_ref().unwrap().meshes {
                 let vertices = mesh.vertices_buffer(display);
                 let indices = mesh.indices_buffer(display);
-    
+
                 target
                     .draw(
                         // (&vertices, &normals),
@@ -76,9 +77,7 @@ impl Engine {
                     .unwrap();
             }
         }
-        
+
         target.finish().unwrap();
     }
-
-    
 }
