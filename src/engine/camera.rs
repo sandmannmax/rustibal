@@ -8,6 +8,7 @@ pub struct Camera {
   position: Vec3d,
   direction: Vec3d,
   up: Vec3d,
+  inputs: Vec<String>
 }
 
 impl Camera {
@@ -21,7 +22,39 @@ impl Camera {
       // up: Vec3d (0.0, 1.0, 0.0)
       position: Vec3d (0.0, 0.0, 0.0),
       direction: Vec3d (0.0, 0.0, 1.0),
-      up: Vec3d (0.0, 1.0, 0.0)
+      up: Vec3d (0.0, 1.0, 0.0),
+      inputs: vec![]
+    }
+  }
+
+  pub fn set_inputs(&mut self, pressed: &Vec<String>, released: &Vec<String>) {
+    for press in pressed {
+      if !self.inputs.contains(press) {
+        self.inputs.push(press.to_string());
+      }
+    }
+    for release in released {
+      if self.inputs.contains(release) {
+        self.inputs.remove(self.inputs.iter().position(|r| r == release).unwrap());
+      }
+    }
+  }
+
+  pub fn process_inputs(&mut self) {
+    for input in self.inputs.clone() {
+      if input == String::from("W") {
+        self.position.2 += 0.01;
+      } else if input == String::from("A") {
+        self.position.0 -= 0.01;
+      } else if input == String::from("S") {
+        self.position.2 -= 0.01;
+      } else if input == String::from("D") {
+        self.position.0 += 0.01;
+      } else if input == String::from("E") {
+        self.position.1 += 0.01;
+      } else if input == String::from("Q") {
+        self.position.1 -= 0.01;
+      }
     }
   }
 

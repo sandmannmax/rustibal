@@ -1,14 +1,17 @@
 
-use crate::engine::structures::{Vertex, Normal, Mesh};
+use crate::engine::structures::{Vertex, Mesh, Scene};
 use crate::utils;
 use std::fs;
 
-pub fn load_obj(path: String) -> Mesh {
+pub fn load_scene(path: String) -> Scene {
+  let mut scene = Scene { meshes: Vec::new() };
+
   let content = fs::read_to_string(path).unwrap();
 
-  let mut vertices = Vec::new();
-  let mut normals = Vec::new();
-  let mut indices = Vec::new();
+  let mut verticesRead = Vec::new();
+  let mut normalsRead = Vec::new();
+  let mut indicesRead = Vec::new();
+
 
   for line in content.split("\n") {
     if line != "" {
@@ -20,28 +23,36 @@ pub fn load_obj(path: String) -> Mesh {
       }
 
       if first == "v" {
-        vertices.push(load_vertex(partVec));
+        verticesRead.push(load_vertex(partVec));
       } else if first == "vn" {
-        normals.push(load_normal(partVec));
+        normalsRead.push(load_normal(partVec));
       } else if first == "f" {
-        let (i1, i2, i3) = load_face(partVec);
-        indices.push(i1);
-        indices.push(i2);
-        indices.push(i3);
+        let partIndices = load_face(partVec);
+        for partIndex in partIndices {
+          indicesRead.push(partIndex);
+        }
       }
     }
   }
 
-  let mesh = Mesh {
-    vertices,
-    normals,
-    indices
-  };
+  let mut vertices = Vec::new();
+  let mut indices = Vec::new();
 
-  mesh
+  for i in 0..verticesRead.len() {
+    vertices.push(Vertex { position: verticesRead[i], normal: normalsRead[i] })
+  }
+
+  for i in 0..indicesRead.len() {
+    indices.push(indicesRead[i][0]);
+  }
+
+  let mesh = Mesh::new(vertices, indices, glium::index::PrimitiveType::TrianglesList);
+  scene.meshes.push(mesh);
+
+  scene
 }
 
-fn load_vertex(parts: Vec<String>) -> Vertex {  
+fn load_vertex(parts: Vec<String>) -> (f32,f32,f32) {  
   if parts.len() != 3 {
     panic!("Length of Vertex must be 3 but was {}", parts.len());
   }
@@ -52,16 +63,18 @@ fn load_vertex(parts: Vec<String>) -> Vertex {
     }
   }
 
-  Vertex {
-    position: (
+  // Vertex {
+  //   position: (
+    (
       parts[0].parse::<f32>().unwrap(),
       parts[1].parse::<f32>().unwrap(),
       parts[2].parse::<f32>().unwrap()
     )
-  }
+    // normal: (0.0,0.0,0.0)
+  // }
 }
 
-fn load_normal(parts: Vec<String>) -> Normal {  
+fn load_normal(parts: Vec<String>) -> (f32,f32,f32) {  
   if parts.len() != 3 {
     panic!("Length of Normal must be 3 but was {}", parts.len());
   }
@@ -72,41 +85,42 @@ fn load_normal(parts: Vec<String>) -> Normal {
     }
   }
 
-  Normal {
-    normal: (
+  // Normal {
+    // normal: (
+    (
       parts[0].parse::<f32>().unwrap(),
       parts[1].parse::<f32>().unwrap(),
       parts[2].parse::<f32>().unwrap()
     )
-  }
+  // }
 }
 
-fn load_face(parts: Vec<String>) -> (u16, u16, u16) {  
-  if parts.len() != 3 {
-    panic!("Length of Normal must be 3 but was {}", parts.len());
+fn load_face(parts: Vec<String>) -> Vec<[u32; 3]> {  
+  if parts.len() < 3 {
+    panic!("Length of Face can't be less than 3 but was {}", parts.len());
   }
 
-  let mut ps: [String; 3] = [parts[0].clone(), parts[1].clone(), parts[2].clone()];
-
-  if ps[0].contains("//") {
-    for i in 0..3 {
-      ps[i] = String::from(ps[i].split("//").next().unwrap());
-    }
-  } else if parts[0].contains("/") {
-    for i in 0..3 {
-      ps[i] = String::from(ps[i].split("/").next().unwrap());
-    }
+  let mut ps = Vec::new();
+  let mut psResult = Vec::new();
+  for part in parts {
+    ps.push(part.clone());
   }
 
-  for i in 0..3 {
-    if !utils::can_parse_u16(&ps[i]) {
-      panic!("Number can not be parsed: {}", ps[i]);
+  for p in ps {
+    let mut indexPart: [u32; 3] = [0; 3];
+    let parts: Vec<&str> = p.split("/").collect();
+    for i in 0..parts.len() {
+      if parts[i] == "" {
+        continue;
+      }
+      if !utils::can_parse_u32(&String::from(parts[i])) {
+        panic!("Number can not be parsed: {}", parts[i]);
+      } else {
+        indexPart[i] = parts[i].parse::<u32>().unwrap()-1;
+      }
     }
+    psResult.push(indexPart);
   }
 
-  (
-    ps[0].parse::<u16>().unwrap(),
-    ps[1].parse::<u16>().unwrap(),
-    ps[2].parse::<u16>().unwrap()
-  ) 
+  return psResult;
 }

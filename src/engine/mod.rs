@@ -4,30 +4,28 @@ mod maths;
 
 use glium::{Display, Program, Surface};
 use std::fs;
-use structures::Mesh;
+use structures::Scene;
 
 pub struct Engine {
   camera: camera::Camera,
-  mesh: Mesh
+  scene: Option<Scene>
 }
 
 impl Engine {
-    pub fn new(mesh: Mesh) -> Engine {
+    pub fn new() -> Engine {
       Engine {
         camera: camera::Camera::new(),
-        mesh: mesh
+        scene: None
       }
     }
 
-    pub fn draw(&mut self, display: &Display) {
-        let vertices = glium::VertexBuffer::new(display, &self.mesh.vertices).unwrap();
-        let normals = glium::VertexBuffer::new(display, &self.mesh.normals).unwrap();
-        let indices = glium::IndexBuffer::new(display, glium::index::PrimitiveType::TrianglesList, &self.mesh.indices).unwrap();
+    pub fn set_scene(&mut self, scene: Scene) {
+        self.scene = Some(scene);
+    }
 
-        let vertex_shader_src = fs::read_to_string("src/shaders/vertex_shader.glsl").unwrap();
-        let fragment_shader_src = fs::read_to_string("src/shaders/fragment_shader.glsl").unwrap();
-
-        let program = Program::from_source(display, &vertex_shader_src, &fragment_shader_src, None).unwrap();
+    pub fn draw(&mut self, display: &Display, pressed: &Vec<String>, released: &Vec<String>) {
+        self.camera.set_inputs(pressed, released);
+        self.camera.process_inputs();
 
         let model = [
             [0.1, 0.0, 0.0, 0.0],
@@ -52,19 +50,33 @@ impl Engine {
                 write: true,
                 .. Default::default()
             },
-            backface_culling: glium::draw_parameters::BackfaceCullingMode::CullClockwise,
+            backface_culling: glium::draw_parameters::BackfaceCullingMode::CullCounterClockwise,
             .. Default::default()
         };
 
-        target
-            .draw(
-                (&vertices, &normals),
-                &indices,
-                &program,
-                &glium::uniform! { model: model, view: view, perspective: perspective, u_light: light },
-                &params,
-            )
-            .unwrap();
+        let vertex_shader_src = fs::read_to_string("src/shaders/vertex_shader.glsl").unwrap();
+        let fragment_shader_src = fs::read_to_string("src/shaders/fragment_shader.glsl").unwrap();
+
+        let program = Program::from_source(display, &vertex_shader_src, &fragment_shader_src, None).unwrap();
+
+        if self.scene.is_some() {
+            for mesh in &self.scene.as_ref().unwrap().meshes {
+                let vertices = mesh.vertices_buffer(display);
+                let indices = mesh.indices_buffer(display);
+    
+                target
+                    .draw(
+                        // (&vertices, &normals),
+                        &vertices,
+                        &indices,
+                        &program,
+                        &glium::uniform! { model: model, view: view, perspective: perspective, u_light: light },
+                        &params,
+                    )
+                    .unwrap();
+            }
+        }
+        
         target.finish().unwrap();
     }
 
