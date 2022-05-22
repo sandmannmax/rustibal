@@ -1,19 +1,27 @@
 #[derive(Copy, Clone, Debug)]
 pub struct Vertex {
-    pub position: (f32, f32, f32),
-    pub normal: (f32, f32, f32),
+    position: (f32, f32, f32),
+    normal: (f32, f32, f32),
+}
+
+impl Vertex {
+    pub fn new(position: (f32, f32, f32)) -> Vertex {
+        Vertex {
+            position,
+            normal: (0.0, 0.0, 0.0),
+        }
+    }
+
+    pub fn new_with_normal(position: (f32, f32, f32), normal: (f32, f32, f32)) -> Vertex {
+        Vertex { position, normal }
+    }
 }
 
 glium::implement_vertex!(Vertex, position, normal);
 
-// #[derive(Copy, Clone)]
-// pub struct Normal {
-// }
-
-// glium::implement_vertex!(Normal, normal);
-
 pub struct Vec3d(pub f32, pub f32, pub f32);
 
+#[derive(Debug)]
 pub struct Mesh {
     pub vertices: Vec<Vertex>,
     indices: Vec<u32>,

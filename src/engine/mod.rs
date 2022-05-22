@@ -67,7 +67,6 @@ impl Engine {
 
                 target
                     .draw(
-                        // (&vertices, &normals),
                         &vertices,
                         &indices,
                         &program,
