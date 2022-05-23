@@ -37,6 +37,30 @@ impl ops::Add<Vec3d> for Vec3d {
     }
 }
 
+impl ops::AddAssign<Vec3d> for Vec3d {
+    fn add_assign(&mut self, vec: Vec3d) {
+        self.0 += vec.0;
+        self.1 += vec.1;
+        self.2 += vec.2;
+    }
+}
+
+impl ops::Sub<Vec3d> for Vec3d {
+    type Output = Vec3d;
+
+    fn sub(self, vec: Vec3d) -> Vec3d {
+        Vec3d(self.0 - vec.0, self.1 - vec.1, self.2 - vec.2)
+    }
+}
+
+impl ops::SubAssign<Vec3d> for Vec3d {
+    fn sub_assign(&mut self, vec: Vec3d) {
+        self.0 -= vec.0;
+        self.1 -= vec.1;
+        self.2 -= vec.2;
+    }
+}
+
 impl ops::Mul<[[f32; 4]; 4]> for Vec3d {
     type Output = Vec3d;
 

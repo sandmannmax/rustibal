@@ -32,9 +32,7 @@ impl Camera {
             let angle: f32 = 3.14 / 2.5;
 
             if press == &String::from("Up") {
-                println!("{}", angle.cos());
-                let mut cross = self.direction.cross_product(self.up);
-                cross.normalize();
+                let cross = self.direction.cross_product(self.up);
                 self.direction = self.direction * angle.cos()
                     + cross.cross_product(self.direction) * angle.cos()
                     + cross * cross.dot_product(self.direction) * (1.0 - angle.cos());
@@ -44,8 +42,7 @@ impl Camera {
                 self.direction.normalize();
                 self.up.normalize();
             } else if press == &String::from("Down") {
-                let mut cross = self.up.cross_product(self.direction);
-                cross.normalize();
+                let cross = self.up.cross_product(self.direction);
                 self.direction = self.direction * angle.cos()
                     + cross.cross_product(self.direction) * angle.cos()
                     + cross * cross.dot_product(self.direction) * (1.0 - angle.cos());
@@ -55,15 +52,13 @@ impl Camera {
                 self.direction.normalize();
                 self.up.normalize();
             } else if press == &String::from("Left") {
-                let mut cross = self.up * -1.0;
-                cross.normalize();
+                let cross = self.up * -1.0;
                 self.direction = self.direction * angle.cos()
                     + cross.cross_product(self.direction) * angle.cos()
                     + cross * cross.dot_product(self.direction) * (1.0 - angle.cos());
                 self.direction.normalize();
             } else if press == &String::from("Right") {
-                let mut cross = self.up;
-                cross.normalize();
+                let cross = self.up;
                 self.direction = self.direction * angle.cos()
                     + cross.cross_product(self.direction) * angle.cos()
                     + cross * cross.dot_product(self.direction) * (1.0 - angle.cos());
@@ -79,19 +74,22 @@ impl Camera {
     }
 
     pub fn process_inputs(&mut self) {
+        let factor = 0.01;
+
         for input in self.inputs.clone() {
             if input == String::from("W") {
-                self.position.2 += 0.01;
+                self.position += self.direction * factor;
             } else if input == String::from("A") {
-                self.position.0 -= 0.01;
+                self.position += self.direction.cross_product(self.up) * factor;
             } else if input == String::from("S") {
-                self.position.2 -= 0.01;
+                self.position -= self.direction * factor;
             } else if input == String::from("D") {
-                self.position.0 += 0.01;
+                self.position -= self.direction.cross_product(self.up) * factor;
             } else if input == String::from("E") {
+                self.position += self.up * factor;
                 self.position.1 += 0.01;
             } else if input == String::from("Q") {
-                self.position.1 -= 0.01;
+                self.position -= self.up * factor;
             }
         }
     }
