@@ -1,10 +1,9 @@
 mod camera;
-mod maths;
-pub mod structures;
+pub mod core;
 
+use crate::engine::core::structures::Scene;
 use glium::{Display, Program, Surface};
 use std::fs;
-use structures::Scene;
 
 pub struct Engine {
     camera: camera::Camera,
@@ -50,7 +49,7 @@ impl Engine {
                 write: true,
                 ..Default::default()
             },
-            backface_culling: glium::draw_parameters::BackfaceCullingMode::CullCounterClockwise,
+            // backface_culling: glium::draw_parameters::BackfaceCullingMode::CullCounterClockwise,
             ..Default::default()
         };
 

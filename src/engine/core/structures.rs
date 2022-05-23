@@ -19,8 +19,6 @@ impl Vertex {
 
 glium::implement_vertex!(Vertex, position, normal);
 
-pub struct Vec3d(pub f32, pub f32, pub f32);
-
 #[derive(Debug)]
 pub struct Mesh {
     pub vertices: Vec<Vertex>,

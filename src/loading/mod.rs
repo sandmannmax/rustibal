@@ -1,4 +1,4 @@
-use crate::engine::structures::{Mesh, Scene, Vertex};
+use crate::engine::core::structures::{Mesh, Scene, Vertex};
 use crate::utils;
 use std::fs;
 

@@ -1,5 +1,4 @@
-use crate::engine::maths;
-use crate::engine::structures::Vec3d;
+use crate::engine::core::vec3d::Vec3d;
 
 pub struct Camera {
     znear: f32,
@@ -16,7 +15,7 @@ impl Camera {
         Camera {
             znear: 0.1,
             zfar: 1024.0,
-            field_of_view: 3.141592 / 3.0,
+            field_of_view: 3.141592 / 2.5,
             position: Vec3d(0.0, 0.0, 0.0),
             direction: Vec3d(0.0, 0.0, 1.0),
             up: Vec3d(0.0, 1.0, 0.0),
@@ -28,6 +27,47 @@ impl Camera {
         for press in pressed {
             if !self.inputs.contains(press) {
                 self.inputs.push(press.to_string());
+            }
+
+            let angle: f32 = 3.14 / 2.5;
+
+            if press == &String::from("Up") {
+                println!("{}", angle.cos());
+                let mut cross = self.direction.cross_product(self.up);
+                cross.normalize();
+                self.direction = self.direction * angle.cos()
+                    + cross.cross_product(self.direction) * angle.cos()
+                    + cross * cross.dot_product(self.direction) * (1.0 - angle.cos());
+                self.up = self.up * angle.cos()
+                    + cross.cross_product(self.up) * angle.cos()
+                    + cross * cross.dot_product(self.up) * (1.0 - angle.cos());
+                self.direction.normalize();
+                self.up.normalize();
+            } else if press == &String::from("Down") {
+                let mut cross = self.up.cross_product(self.direction);
+                cross.normalize();
+                self.direction = self.direction * angle.cos()
+                    + cross.cross_product(self.direction) * angle.cos()
+                    + cross * cross.dot_product(self.direction) * (1.0 - angle.cos());
+                self.up = self.up * angle.cos()
+                    + cross.cross_product(self.up) * angle.cos()
+                    + cross * cross.dot_product(self.up) * (1.0 - angle.cos());
+                self.direction.normalize();
+                self.up.normalize();
+            } else if press == &String::from("Left") {
+                let mut cross = self.up * -1.0;
+                cross.normalize();
+                self.direction = self.direction * angle.cos()
+                    + cross.cross_product(self.direction) * angle.cos()
+                    + cross * cross.dot_product(self.direction) * (1.0 - angle.cos());
+                self.direction.normalize();
+            } else if press == &String::from("Right") {
+                let mut cross = self.up;
+                cross.normalize();
+                self.direction = self.direction * angle.cos()
+                    + cross.cross_product(self.direction) * angle.cos()
+                    + cross * cross.dot_product(self.direction) * (1.0 - angle.cos());
+                self.direction.normalize();
             }
         }
         for release in released {
@@ -70,16 +110,15 @@ impl Camera {
     }
 
     pub fn view_matrix(&self) -> [[f32; 4]; 4] {
-        let normalized_direction =
-            maths::normalize(&Vec3d(self.direction.0, self.direction.1, self.direction.2));
+        let mut normalized_direction = Vec3d(self.direction.0, self.direction.1, self.direction.2);
+        normalized_direction.normalize();
 
-        let s = Vec3d(
+        let mut s_norm = Vec3d(
             self.up.1 * normalized_direction.2 - self.up.2 * normalized_direction.1,
             self.up.2 * normalized_direction.0 - self.up.0 * normalized_direction.2,
             self.up.0 * normalized_direction.1 - self.up.1 * normalized_direction.0,
         );
-
-        let s_norm = maths::normalize(&s);
+        s_norm.normalize();
 
         let u = [
             normalized_direction.1 * s_norm.2 - normalized_direction.2 * s_norm.1,
