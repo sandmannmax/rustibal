@@ -21,7 +21,7 @@ impl Window {
     }
 
     pub fn init(&mut self) {
-        let wb = glutin::window::WindowBuilder::new().with_title("3D Engine");
+        let wb = glutin::window::WindowBuilder::new().with_title("rustibal");
         let cb = glutin::ContextBuilder::new().with_depth_buffer(24);
         self.display = Some(glium::Display::new(wb, cb, &self.event_loop).unwrap());
 
